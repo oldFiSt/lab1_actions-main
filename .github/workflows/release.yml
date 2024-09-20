@@ -1,0 +1,130 @@
+name: 'C++ CI'
+
+on:
+  push:
+    branches:
+      - main
+      - feature/github_actions
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      
+      # Установка необходимых зависимостей для Linux
+      - run: sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev
+      
+      # Генерация файлов сборки с помощью CMake с актуальной версией
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      # Сборка проекта
+      - run: cmake --build .
+      
+      # Запуск тестов
+      - run: cmake --build . --target test
+      
+      # Создание пакета
+      - run: cmake --build . --target package
+
+      # Проверка существующего тега перед созданием релиза
+      - name: Check if tag exists
+        id: check_tag_exists
+        run: |
+          TAG="release-${{ github.run_number }}-${{ github.sha }}"
+          if git tag -l | grep -q "$TAG"; then
+            echo "Tag already exists. Skipping release creation."
+            echo "tag_exists=true" >> $GITHUB_ENV 
+          else 
+            echo "tag_exists=false" >> $GITHUB_ENV 
+          fi
+
+      # Создание релиза на GitHub только если тег не существует
+      - name: Create Release
+        id: create_release
+        if: env.tag_exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "release-${{ github.run_number }}-${{ github.sha }}"
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false 
+
+      # Загрузка артефактов релиза на GitHub только если релиз был создан 
+      - name: Upload Release Asset 
+        id: upload-release-asset 
+        if: env.tag_exists == 'false'
+        uses: actions/upload-release-asset@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
+          asset_content_type: application/vnd.debian.binary-package 
+
+  build-macos:
+    runs-on: macos-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      
+      # Установка необходимых зависимостей для macOS 
+      - run: brew update && brew install boost glfw glm
+      
+      # Генерация файлов сборки с помощью CMake с актуальной версией 
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      # Сборка проекта 
+      - run: cmake --build .
+      
+      # Запуск тестов 
+      - run: cmake --build . --target test
+      
+      # Создание пакета (если необходимо) 
+      - run: cmake --build . --target package
+      
+      # Проверка существующего тега перед созданием релиза для macOS 
+      - name: Check if tag exists for macOS 
+        id: check_tag_exists_macos 
+        run: |
+          TAG="release-${{ github.run_number }}-${{ github.sha }}"
+          if git tag -l | grep -q "$TAG"; then 
+            echo "Tag already exists for macOS. Skipping release creation." 
+            echo "tag_exists=true" >> $GITHUB_ENV  
+          else 
+            echo "tag_exists=false" >> $GITHUB_ENV  
+          fi 
+
+      # Создание релиза на GitHub для macOS только если тег не существует 
+      - name: Create Release for macOS 
+        id: create_release_macos 
+        if: env.tag_exists == 'false'  
+        uses: actions/create-release@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          tag_name: "release-${{ github.run_number }}-${{ github.sha }}"  
+          release_name: Release ${{ github.run_number }}  
+          draft: false  
+          prerelease: false 
+
+      # Загрузка артефактов релиза на GitHub для macOS только если релиз был создан 
+      - name: Upload Release Asset for macOS 
+        id: upload-release-asset-macos 
+        if: env.tag_exists == 'false'  
+        uses: actions/upload-release-asset@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_content_type: application/octet-stream  
