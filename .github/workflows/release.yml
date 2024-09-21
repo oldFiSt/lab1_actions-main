@@ -38,6 +38,7 @@ jobs:
           fi
 
       - name: Create Release for Linux
+        id: create_release  # Добавьте идентификатор для этого шага
         if: env.tag_exists == 'false'
         uses: actions/create-release@v1
         env:
@@ -54,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает
           asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
           asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package
@@ -84,29 +85,30 @@ jobs:
           TAG="macos-release-${{ github.run_number }}-${{ github.sha }}"
           if git tag -l | grep -q "$TAG"; then
             echo "tag_exists=true" >> $GITHUB_ENV
-          else
-            echo "tag_exists=false" >> $GITHUB_ENV
-          fi
+          else 
+            echo "tag_exists=false" >> $GITHUB_ENV 
+          fi  
 
       - name: Create Release for macOS
+        id: create_release_macos  # Добавьте идентификатор для этого шага
         if: env.tag_exists == 'false'
-        uses: actions/create-release@v1
+        uses: actions/create-release@v1  
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
           tag_name: macos-${{ github.run_number }}-${{ github.sha }}
           release_name: macOS Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
+          draft: false  
+          prerelease: false 
 
       - name: Upload macOS Release Asset
         if: env.tag_exists == 'false'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v1  
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
-          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg
-          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg
-          asset_content_type: application/octet-stream
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает 
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_content_type: application/octet-stream 
 
