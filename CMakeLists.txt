@@ -27,6 +27,7 @@ set_target_properties(test_version PROPERTIES
 
 target_link_libraries(helloworld_cli PRIVATE helloworld)
 target_link_libraries(test_version ${Boost_LIBRARIES} helloworld)
+install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
 
 if (MSVC)
     target_compile_options(helloworld_cli PRIVATE /W4)
@@ -37,8 +38,6 @@ else ()
     target_compile_options(helloworld PRIVATE -Wall -Wextra -pedantic -Werror)
     target_compile_options(test_version PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()
-
-install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
 
 # Установка генератора CPack для macOS или Linux
 if (APPLE)
