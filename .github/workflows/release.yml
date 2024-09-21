@@ -52,19 +52,21 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Check if Linux asset exists 
-        id: check_asset_exists  
+      # Проверка существования исполняемого файла перед загрузкой
+      - name: Check if Linux executable exists 
+        id: check_executable_exists  
         run: |
           if [ -f "./bin/helloworld_cli" ]; then 
-            echo "Asset exists."
-            echo "asset_exists=true" >> $GITHUB_ENV;  
+            echo "Executable exists."
+            echo "executable_exists=true" >> $GITHUB_ENV;  
           else 
-            echo "Asset does not exist."
-            echo "asset_exists=false" >> $GITHUB_ENV;  
+            echo "Executable does not exist."
+            echo "executable_exists=false" >> $GITHUB_ENV;  
           fi  
 
+      # Загрузка исполняемого файла в релиз
       - name: Upload Linux Release Asset (Executable)
-        if: env.tag_exists == 'false' && env.asset_exists == 'true'  # Загружает файл только если он существует.
+        if: env.tag_exists == 'false' && env.executable_exists == 'true'  # Загружает файл только если он существует.
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,6 +76,7 @@ jobs:
           asset_name: helloworld_cli  
           asset_content_type: application/octet-stream  
 
+      # Загрузка пакета .deb в релиз
       - name: Upload Linux Release Asset (Package)
         if: env.tag_exists == 'false'
         uses: actions/upload-release-asset@v1
@@ -114,6 +117,7 @@ jobs:
             echo "tag_exists=false" >> $GITHUB_ENV 
           fi  
 
+      # Проверка существования пакета для macOS перед загрузкой.
       - name: Check if macOS asset exists 
         id: check_asset_exists_macos  
         run: |
@@ -125,6 +129,7 @@ jobs:
             echo "asset_exists=false" >> $GITHUB_ENV;  
           fi  
 
+      # Создание релиза для macOS
       - name: Create Release for macOS 
         id: create_release_macos 
         if : env.tag_exists == 'false'  
@@ -137,6 +142,7 @@ jobs:
            draft : false  
            prerelease : false 
 
+      # Загрузка пакета для macOS в релиз 
       - name : Upload macOS Release Asset 
          if : env.tag_exists == 'false' && env.asset_exists == 'true' 
          uses : actions/upload-release-asset@v1  
