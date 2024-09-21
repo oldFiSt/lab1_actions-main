@@ -1,4 +1,4 @@
-name: 'C++ CI'
+name: CI/CD
 
 on:
   push:
@@ -15,34 +15,23 @@ jobs:
         with:
           submodules: true
       
-      # Установка необходимых зависимостей для Linux
-      - run: sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev
+      - run: |
+          sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
       
-      # Генерация файлов сборки с помощью CMake с актуальной версией
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
       
-      # Сборка проекта
       - run: cmake --build .
       
-      # Запуск тестов
       - run: cmake --build . --target test
       
-      # Создание пакета
       - run: cmake --build . --target package
 
-      # Проверка существующего тега перед созданием релиза
       - name: Check if tag exists
         id: check_tag_exists
         run: |
           TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          if git tag -l | grep -q "$TAG"; then
-            echo "Tag already exists. Skipping release creation."
-            echo "tag_exists=true" >> $GITHUB_ENV 
-          else 
-            echo "tag_exists=false" >> $GITHUB_ENV 
-          fi
+          git tag -l | grep -q "$TAG" && echo "tag_exists=true" >> $GITHUB_ENV || echo "tag_exists=false" >> $GITHUB_ENV
 
-      # Создание релиза на GitHub только если тег не существует
       - name: Create Release
         id: create_release
         if: env.tag_exists == 'false'
@@ -55,7 +44,6 @@ jobs:
           draft: false
           prerelease: false 
 
-      # Загрузка артефактов релиза на GitHub только если релиз был создан 
       - name: Upload Release Asset 
         id: upload-release-asset 
         if: env.tag_exists == 'false'
@@ -76,34 +64,27 @@ jobs:
         with:
           submodules: true
       
-      # Установка необходимых зависимостей для macOS 
-      - run: brew update && brew install boost glfw glm
+      - run: |
+          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }
       
-      # Генерация файлов сборки с помощью CMake с актуальной версией 
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
       
-      # Сборка проекта 
       - run: cmake --build .
       
-      # Запуск тестов 
       - run: cmake --build . --target test
       
-      # Создание пакета (если необходимо) 
       - run: cmake --build . --target package
       
-      # Проверка существующего тега перед созданием релиза для macOS 
       - name: Check if tag exists for macOS 
         id: check_tag_exists_macos 
         run: |
           TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          if git tag -l | grep -q "$TAG"; then 
-            echo "Tag already exists for macOS. Skipping release creation." 
-            echo "tag_exists=true" >> $GITHUB_ENV  
-          else 
-            echo "tag_exists=false" >> $GITHUB_ENV  
-          fi 
+          if git tag -l | grep -q "$TAG"; then
+            echo "tag_exists=true" >> $GITHUB_ENV;  
+          else
+            echo "tag_exists=false" >> $GITHUB_ENV;  
+          fi  
 
-      # Создание релиза на GitHub для macOS только если тег не существует 
       - name: Create Release for macOS 
         id: create_release_macos 
         if: env.tag_exists == 'false'  
@@ -116,7 +97,6 @@ jobs:
           draft: false  
           prerelease: false 
 
-      # Загрузка артефактов релиза на GitHub для macOS только если релиз был создан 
       - name: Upload Release Asset for macOS 
         id: upload-release-asset-macos 
         if: env.tag_exists == 'false'  

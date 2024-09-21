@@ -48,19 +48,21 @@ else()
 endif()
 
 # Установка имени пакета для CPack
-set(CPACK_BUNDLE_NAME "YourApplicationName")  # Замените на имя вашего приложения
+set(CPACK_BUNDLE_NAME "LABABAB")  
 
 # Установка пути к Info.plist для CPack
-set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist")
+set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resources/Info.plist") 
 
 # Установка пути к иконке для CPack
-set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/ic.icns")
+set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/resources/ic.icns") 
 
 # Установка версии пакета для CPack
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_CONTACT "example@example.com")
 
+
 include(CPack)
 
-enable_testing()
+enable_testing() #включает поддержку тестирования в проекте
+
 add_test(test_version test_version)
