@@ -37,13 +37,6 @@ jobs:
             echo "tag_exists=false" >> $GITHUB_ENV 
           fi
 
-      # Optional step to delete existing tags for testing purposes
-      - name: Delete existing tag if it exists
-        run: |
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"
-          git tag -d "$TAG" || echo "Tag does not exist."
-          git push origin --delete "$TAG" || echo "Remote tag does not exist."
-
       - name: Create Release  
         id: create_release  
         if: env.tag_exists == 'false'  
@@ -104,7 +97,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
-          tag_name: "release-${{ github.run_number }}-${{ github.sha }}"  
+          tag_name: "release-${{ github.run_number }}-${{ github.sha }} -- for MAC"
           release_name: Release ${{ github.run_number }}  
           draft: false  
           prerelease: false 
