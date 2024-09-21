@@ -14,102 +14,99 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      
+
       - run: |
           sudo apt-get update && sudo apt-get install -y libboost-test-dev libglfw3-dev libglm-dev || { echo 'Failed to install dependencies'; exit 1; }
-      
+
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      
+
       - run: cmake --build .
-      
+
       - run: cmake --build . --target test
-      
+
       - run: cmake --build . --target package
 
-      - name: Check if tag exists
+      - name: Check if Linux tag exists
         id: check_tag_exists
         run: |
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"
+          TAG="linux-release-${{ github.run_number }}-${{ github.sha }}"
           if git tag -l | grep -q "$TAG"; then
             echo "Tag already exists. Skipping release creation."
-            echo "tag_exists=true" >> $GITHUB_ENV 
-          else 
-            echo "tag_exists=false" >> $GITHUB_ENV 
+            echo "tag_exists=true" >> $GITHUB_ENV
+          else
+            echo "tag_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: Create Release  
-        id: create_release  
-        if: env.tag_exists == 'false'  
-        uses: actions/create-release@v1  
+      - name: Create Release for Linux
+        if: env.tag_exists == 'false'
+        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.run_number }}-${{ github.sha }}  # Используйте переменные окружения для создания имени тега.
-          release_name: Release ${{ github.run_number }}  # Используйте переменные окружения для создания имени релиза.
-          draft: false  
-          prerelease: false  
+          tag_name: linux-${{ github.run_number }}-${{ github.sha }}
+          release_name: Linux Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
 
-      - name: Upload Release Asset 
-        id: upload-release-asset 
-        if: env.tag_exists == 'false'  
-        uses: actions/upload-release-asset@v1  
+      - name: Upload Linux Release Asset
+        if: env.tag_exists == 'false'
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
-          asset_content_type: application/vnd.debian.binary-package 
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
 
   build-macos:
-    runs-on: macos-latest   
-    permissions: write-all   
+    runs-on: macos-latest
+    permissions: write-all
     steps:
-      - uses: actions/checkout@v3   
+      - uses: actions/checkout@v3
         with:
-          submodules: true   
+          submodules: true
 
-      - run: |   
-          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; }  
-      
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}   
-      
-      - run: cmake --build .   
+      - run: | 
+          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; } 
 
-      - run: cmake --build . --target test   
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
 
-      - run: cmake --build . --target package   
+      - run: cmake --build .
 
-      - name: Check if tag exists for macOS   
-        id: check_tag_exists_macos   
-        run: |  
-          TAG="release-${{ github.run_number }}-${{ github.sha }}"  
-          if git tag -l | grep -q "$TAG"; then 
-            echo "tag_exists=true" >> $GITHUB_ENV;  
-          else 
-            echo "tag_exists=false" >> $GITHUB_ENV;  
-          fi  
+      - run: cmake --build . --target test
 
-      - name: Create Release for macOS 
-        id: create_release_macos 
-        if: env.tag_exists == 'false'  
-        uses: actions/create-release@v1  
+      - run: cmake --build . --target package
+
+      - name: Check if macOS tag exists
+        id: check_tag_exists_macos
+        run: |
+          TAG="macos-release-${{ github.run_number }}-${{ github.sha }}"
+          if git tag -l | grep -q "$TAG"; then
+            echo "tag_exists=true" >> $GITHUB_ENV
+          else
+            echo "tag_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release for macOS
+        if: env.tag_exists == 'false'
+        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.run_number }}-${{ github.sha }}  # Используйте переменные окружения для создания имени тега.
-          release_name: Release for MAC ${{ github.run_number }}  # Используйте переменные окружения для создания имени релиза.
-          draft: false  
-          prerelease: false 
+          tag_name: macos-${{ github.run_number }}-${{ github.sha }}
+          release_name: macOS Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
 
-      - name: Upload Release Asset for macOS 
-        id: upload-release-asset-macos 
-        if: env.tag_exists == 'false'  
-        uses: actions/upload-release-asset@v1  
+      - name: Upload macOS Release Asset
+        if: env.tag_exists == 'false'
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-          asset_content_type: application/octet-stream 
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg
+          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg
+          asset_content_type: application/octet-stream
+
