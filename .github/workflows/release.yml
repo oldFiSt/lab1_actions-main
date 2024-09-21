@@ -38,6 +38,7 @@ jobs:
           fi
 
       - name: Create Release for Linux
+        id: create_release  # Добавьте идентификатор для этого шага
         if: env.tag_exists == 'false'
         uses: actions/create-release@v1
         env:
@@ -54,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает
           asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
           asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
           asset_content_type: application/vnd.debian.binary-package
@@ -88,19 +89,8 @@ jobs:
             echo "tag_exists=false" >> $GITHUB_ENV 
           fi  
 
-      - name: Check if macOS asset exists  # Проверка существования файла перед загрузкой.
-        id: check_asset_exists_macos  
-        run: |
-          if [ -f "./helloworld-0.0.${{ github.run_number }}-macOS.pkg" ]; then 
-            echo "Asset exists."
-            echo "asset_exists=true" >> $GITHUB_ENV;  
-          else 
-            echo "Asset does not exist."
-            echo "asset_exists=false" >> $GITHUB_ENV;  
-          fi  
-
       - name: Create Release for macOS 
-        id: create_release_macos 
+        id: create_release_macos  # Добавьте идентификатор для этого шага
         if: env.tag_exists == 'false'  
         uses: actions/create-release@v1  
         env:
@@ -112,12 +102,12 @@ jobs:
           prerelease: false 
 
       - name: Upload macOS Release Asset 
-        if: env.tag_exists == 'false' && env.asset_exists == 'true'  # Загружает файл только если он существует.
+        if: env.tag_exists == 'false'
         uses: actions/upload-release-asset@v1  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
-          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает 
           asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
           asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
           asset_content_type: application/octet-stream 
