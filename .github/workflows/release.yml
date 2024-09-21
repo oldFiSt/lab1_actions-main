@@ -89,7 +89,7 @@ jobs:
           else 
             echo "tag_exists=false" >> $GITHUB_ENV;  
           fi  
-      
+
       - name: Create Release for macOS 
         id: create_release_macos 
         if: env.tag_exists == 'false'  
