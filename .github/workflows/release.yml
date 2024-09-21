@@ -56,69 +56,69 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
           asset_content_type: application/vnd.debian.binary-package
-  
+
   build-macos:
-      runs-on: macos-latest   
-      permissions: write-all   
-      steps:
-        - uses: actions/checkout@v3   
-          with:
-            submodules: true   
+    runs-on: macos-latest   
+    permissions: write-all   
+    steps:
+      - uses: actions/checkout@v3   
+        with:
+          submodules: true   
 
-        - run: | 
-            brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; } 
+      - run: | 
+          brew update && brew install boost glfw glm || { echo 'Failed to install dependencies'; exit 1; } 
 
-        - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
 
-        - run: cmake --build .
+      - run: cmake --build .
 
-        - run: cmake --build . --target test
+      - run: cmake --build . --target test
 
-        - run: cmake --build . --target package
+      - run: cmake --build . --target package
 
-        - name: Check if macOS tag exists
-          id: check_tag_exists_macos
-          run: |
-            TAG="macos-release-${{ github.run_number }}-${{ github.sha }}"
-            if git tag -l | grep -q "$TAG"; then
-              echo "tag_exists=true" >> $GITHUB_ENV
-            else 
-              echo "tag_exists=false" >> $GITHUB_ENV 
-            fi  
+      - name: Check if macOS tag exists
+        id: check_tag_exists_macos
+        run: |
+          TAG="macos-release-${{ github.run_number }}-${{ github.sha }}"
+          if git tag -l | grep -q "$TAG"; then
+            echo "tag_exists=true" >> $GITHUB_ENV
+          else 
+            echo "tag_exists=false" >> $GITHUB_ENV 
+          fi  
 
-        - name: Check if macOS asset exists  # Проверка существования файла перед загрузкой.
-          id: check_asset_exists_macos  
-          run: |
-            if [ -f "./helloworld-0.0.${{ github.run_number }}-macOS.pkg" ]; then 
-              echo "Asset exists."
-              echo "asset_exists=true" >> $GITHUB_ENV;  
-            else 
-              echo "Asset does not exist."
-              echo "asset_exists=false" >> $GITHUB_ENV;  
-            fi  
+      - name: Check if macOS asset exists  # Проверка существования файла перед загрузкой.
+        id: check_asset_exists_macos  
+        run: |
+          if [ -f "./helloworld-0.0.${{ github.run_number }}-macOS.pkg" ]; then 
+            echo "Asset exists."
+            echo "asset_exists=true" >> $GITHUB_ENV;  
+          else 
+            echo "Asset does not exist."
+            echo "asset_exists=false" >> $GITHUB_ENV;  
+          fi  
 
-        - name: Create Release for macOS 
-          id: create_release_macos 
-          if: env.tag_exists == 'false'  
-          uses: actions/create-release@v1  
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-          with:
-            tag_name: macos-${{ github.run_number }}-${{ github.sha }}
-            release_name: macOS Release ${{ github.run_number }}
-            draft: false  
-            prerelease: false 
+      - name: Create Release for macOS 
+        id: create_release_macos 
+        if: env.tag_exists == 'false'  
+        uses: actions/create-release@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          tag_name: macos-${{ github.run_number }}-${{ github.sha }}
+          release_name: macOS Release ${{ github.run_number }}
+          draft: false  
+          prerelease: false 
 
-        - name: Upload macOS Release Asset 
-          if: env.tag_exists == 'false' && env.asset_exists == 'true'  # Загружает файл только если он существует.
-          uses: actions/upload-release-asset@v1  
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-          with:
-            upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  
-            asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-            asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-            asset_content_type: application/octet-stream 
+      - name: Upload macOS Release Asset 
+        if: env.tag_exists == 'false' && env.asset_exists == 'true'  # Загружает файл только если он существует.
+        uses: actions/upload-release-asset@v1  
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        with:
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+          asset_content_type: application/octet-stream 
