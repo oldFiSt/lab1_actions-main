@@ -26,6 +26,11 @@ jobs:
 
       - run: cmake --build . --target package
 
+      # Вывод содержимого текущей директории
+      - name: List files in the current directory
+        run: ls -la .  # Выводит список файлов в текущей директории
+
+      # Вывод содержимого директории bin
       - name: List files in the bin directory
         run: ls -la ./bin  # Выводит список файлов в директории bin
 
@@ -108,7 +113,7 @@ jobs:
       - run: cmake --build . --target package
 
       - name: Check if macOS tag exists
-        id: create_release_macos 
+        id : create_release_macos 
         if : env.tag_exists == 'false'  
         uses : actions/create-release@v1  
         env :
@@ -119,13 +124,14 @@ jobs:
            draft : false  
            prerelease : false 
 
+      # Загрузка пакета для macOS в релиз 
       - name : Upload macOS Release Asset 
         if : env.tag_exists == 'false' && env.asset_exists == 'true' 
         uses : actions/upload-release-asset@v1  
         env :
           GITHUB_TOKEN : ${{ secrets.GITHUB_TOKEN }}  
         with :
-          upload_url : ${{ steps.create_release_macos.outputs.upload_url }}  
-          asset_path : ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-          asset_name : helloworld-0.0.${{ github.run_number }}-macOS.pkg  
-          asset_content_type : application/octet-stream 
+           upload_url : ${{ steps.create_release_macos.outputs.upload_url }}  
+           asset_path : ./helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+           asset_name : helloworld-0.0.${{ github.run_number }}-macOS.pkg  
+           asset_content_type : application/octet-stream 
