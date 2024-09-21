@@ -49,13 +49,24 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Linux Release Asset
+      - name: Upload Linux Release Asset (Executable)
         if: env.tag_exists == 'false'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}  # Убедитесь, что идентификатор совпадает
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
+          asset_path: ./bin/helloworld_cli  # Убедитесь, что путь соответствует фактическому расположению файла
+          asset_name: helloworld_cli  
+          asset_content_type: application/octet-stream  # Тип контента для исполняемого файла
+
+      - name: Upload Linux Release Asset (Package)
+        if: env.tag_exists == 'false'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
           asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  
           asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  
           asset_content_type: application/vnd.debian.binary-package
