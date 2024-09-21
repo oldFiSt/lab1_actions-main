@@ -44,8 +44,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
-          tag_name: ${{ github.run_number }}-${{ github.sha }} -- for linux
-          release_name: Release ${{ github.run_number }}  
+          tag_name: ${{ github.run_number }}-${{ github.sha }}  # Используйте переменные окружения для создания имени тега.
+          release_name: Release ${{ github.run_number }}  # Используйте переменные окружения для создания имени релиза.
           draft: false  
           prerelease: false  
 
@@ -97,8 +97,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
         with:
-          tag_name: ${{ github.run_number }}-${{ github.sha }} -- for mac1
-          release_name: Release${{ github.run_number }} for MAC 
+          tag_name: ${{ github.run_number }}-${{ github.sha }}  # Используйте переменные окружения для создания имени тега.
+          release_name: Release for MAC ${{ github.run_number }}  # Используйте переменные окружения для создания имени релиза.
           draft: false  
           prerelease: false 
 
